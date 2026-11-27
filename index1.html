@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LuxScale · API Gallery</title>
+<link rel="icon" href="https://studio.lxscale.com/icons/lxscale%20icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+<style>
+/* LuxScale brand identity */
+:root{
+  --red:#c91d26;
+  --orange:#f47937; --yellow:#f7de65; --cream:#fbf3cf; --blue:#3ab1d4;
+  --ink:#131d20; --teal1:#263a40; --teal2:#395760; --teal3:#4c7480;
+  --paper:#f5f1ef; --sand1:#ebe4e0; --sand2:#e1d7d0; --sand3:#d7cac1;
+  --grad:linear-gradient(90deg,#f47937 0%,#f7de65 26.5%,#fbf3cf 46.8%,#3ab1d4 100%);
+  --font:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font:400 15px/1.6 var(--font);min-height:100vh}
+.wrap{width:min(1200px,92%);margin:0 auto}
+header{padding:28px 0 8px}
+header img{height:40px;display:block}
+.bar{height:4px;background:var(--grad);margin:20px 0 32px}
+
+.form{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+@media(max-width:800px){.form{grid-template-columns:1fr}}
+label{display:block;font-size:12px;font-weight:500;color:var(--teal3);margin-bottom:6px}
+input,select{width:100%;background:#fff;border:1px solid var(--sand3);color:var(--ink);padding:12px 14px;font:400 14px var(--font);border-radius:6px;outline:none}
+input:focus,select:focus{border-color:var(--ink)}
+.keyrow{display:flex;gap:8px}
+.keyrow input{font-family:var(--mono);font-size:13px}
+.btn{font:500 14px var(--font);padding:12px 20px;border-radius:6px;border:1px solid var(--sand3);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn.red:hover{background:#a8161e;border-color:#a8161e}
+.btn:disabled{opacity:.6;cursor:wait}
+.row2{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap}
+.row2 select{width:auto}
+.row2 input{width:200px}
+.link{background:none;border:0;color:var(--teal3);font:400 13px var(--font);cursor:pointer;text-decoration:underline;padding:0}
+
+#info{margin:24px 0 0;font-size:13px;color:var(--teal3);display:none;font-family:var(--mono)}
+#info b{color:var(--ink);font-weight:500}
+#info .bad{color:var(--red)}
+#err{display:none;margin-top:16px;padding:12px 16px;border-left:3px solid var(--red);background:var(--sand1);font-size:14px}
+
+#out{margin:28px 0 80px;display:none}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.tools input{max-width:280px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.card{background:var(--sand1);border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(19,29,32,.12)}
+.thumb{aspect-ratio:4/3;background:var(--sand2);display:flex;align-items:center;justify-content:center}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb span{font:500 44px var(--font);color:var(--sand3)}
+.meta{padding:14px 16px 16px}
+.meta h3{font:500 15px/1.3 var(--font);word-break:break-word}
+.meta p{font-size:13px;color:var(--teal3);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+pre{background:var(--ink);color:var(--paper);padding:20px;border-radius:8px;overflow:auto;max-height:70vh;font:12px/1.6 var(--mono)}
+
+#modal{position:fixed;inset:0;background:rgba(19,29,32,.72);display:none;align-items:center;justify-content:center;padding:4vw;z-index:20}
+#modal.open{display:flex}
+.sheet{background:var(--paper);width:min(820px,100%);max-height:88vh;overflow:auto;border-radius:10px}
+.sheet .img{background:var(--sand2)}
+.sheet .img img{width:100%;max-height:360px;object-fit:contain;display:block}
+.sheet .body{padding:22px 24px 26px}
+.sheet h2{font:600 22px/1.2 var(--font);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td{padding:8px 0;border-bottom:1px solid var(--sand2);vertical-align:top;word-break:break-word}
+td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(--mono);font-size:12px}
+.close{float:right}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header><img src="https://studio.lxscale.com/icons/lxscale%20icon.svg" alt="LuxScale"></header>
+  <div class="bar"></div>
+
+  <div class="form">
+    <div>
+      <label for="url">Endpoint</label>
+      <input id="url" type="url" placeholder="https://api.example.com/items" autocomplete="off" spellcheck="false">
+    </div>
+    <div>
+      <label for="key">API key</label>
+      <div class="keyrow">
+        <input id="key" type="password" placeholder="Paste key" autocomplete="off" spellcheck="false">
+        <button class="btn" id="eye" type="button">Show</button>
+      </div>
+    </div>
+    <button class="btn red" id="go">Fetch</button>
+  </div>
+
+  <div class="row2">
+    <select id="auth" aria-label="Send key as">
+      <option value="bearer">Bearer token</option>
+      <option value="header">Custom header</option>
+      <option value="query">Query param</option>
+    </select>
+    <input id="authName" placeholder="Name" style="display:none" autocomplete="off">
+    <input id="path" placeholder="Data path (optional)" autocomplete="off">
+    <button class="link" id="sample" type="button">Sample data</button>
+  </div>
+
+  <div id="err"></div>
+  <div id="info"></div>
+
+  <section id="out">
+    <div class="tools">
+      <input id="q" placeholder="Filter…" autocomplete="off">
+      <button class="link" id="rawBtn" type="button">Raw JSON</button>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div id="raw" style="display:none"></div>
+  </section>
+</div>
+
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const IMG_RE = /\.(png|jpe?g|gif|webp|svg|avif|bmp)(\?.*)?$/i;
+  const IMG_KEY = /(image|img|photo|thumb|picture|cover|logo|avatar|banner|icon|poster)/i;
+  const TITLE = ['name','title','label','display_name','id','code','sku','slug'];
+  const DESC = ['description','summary','subtitle','desc','text','category','type'];
+  let RAW, FLAT = [], MAP = {};
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+  const leaf = k => k.split('.').pop().replace(/\[\d+\]/g,'').toLowerCase();
+  const isImg = (k,v) => typeof v === 'string' && (v.startsWith('data:image') || IMG_RE.test(v) || (IMG_KEY.test(k) && /^(https?:)?\/\//.test(v)));
+
+  function records(d, path){
+    if (path){ const r = path.split('.').filter(Boolean).reduce((o,p)=>o==null?o:o[p], d); return Array.isArray(r) ? r : isObj(r) ? [r] : []; }
+    if (Array.isArray(d)) return d;
+    const q = [d];
+    while (q.length){
+      const c = q.shift();
+      if (Array.isArray(c) && c.some(isObj)) return c;
+      if (isObj(c)) Object.values(c).forEach(v => v && typeof v === 'object' && q.push(v));
+    }
+    return isObj(d) ? [d] : [];
+  }
+  function flat(o, pre='', out={}, depth=0){
+    if (Array.isArray(o)){
+      if (o.every(x => x === null || typeof x !== 'object')) out[pre] = o.join(', ');
+      else if (depth < 3) o.slice(0,20).forEach((x,i) => flat(x, pre+'['+i+']', out, depth+1));
+      else out[pre] = JSON.stringify(o);
+    } else if (isObj(o)){
+      if (depth > 3) out[pre] = JSON.stringify(o);
+      else Object.keys(o).forEach(k => flat(o[k], pre ? pre+'.'+k : k, out, depth+1));
+    } else out[pre] = o;
+    return out;
+  }
+  function detect(){
+    const ks = []; FLAT.slice(0,50).forEach(f => Object.keys(f).forEach(k => ks.includes(k) || ks.push(k)));
+    MAP.title = TITLE.map(t => ks.find(k => leaf(k) === t)).find(Boolean) || ks.find(k => FLAT.some(f => typeof f[k] === 'string')) || null;
+    MAP.img   = ks.find(k => FLAT.some(f => isImg(k, f[k]))) || null;
+    MAP.desc  = DESC.map(t => ks.find(k => leaf(k) === t && k !== MAP.title)).find(Boolean) || null;
+    return ks.length;
+  }
+
+  function show(msg){ const e = $('err'); e.innerHTML = msg; e.style.display = msg ? 'block' : 'none'; }
+  function info(status, ms, size, n, f){
+    const ok = status >= 200 && status < 300;
+    $('info').style.display = 'block';
+    $('info').innerHTML = '<b class="' + (ok ? '' : 'bad') + '">' + (status || '—') + '</b> · ' + ms + ' ms · ' +
+      (size > 1024 ? (size/1024).toFixed(1) + ' KB' : size + ' B') + ' · <b>' + n + '</b> records · ' + f + ' fields';
+  }
+
+  function ingest(d, meta){
+    RAW = d;
+    const recs = records(d, $('path').value.trim());
+    FLAT = recs.map(r => isObj(r) || Array.isArray(r) ? flat(r) : {value: r});
+    const nf = detect();
+    info(meta.status, meta.ms, meta.size, recs.length, nf);
+    $('out').style.display = 'block';
+    $('raw').innerHTML = '<pre>' + esc(JSON.stringify(d, null, 2)) + '</pre>';
+    render();
+  }
+
+  function render(){
+    const q = $('q').value.trim().toLowerCase();
+    const ids = FLAT.map((_,i)=>i).filter(i => !q || Object.values(FLAT[i]).some(v => String(v).toLowerCase().includes(q)));
+    $('gallery').innerHTML = ids.length ? ids.slice(0,300).map(i => {
+      const f = FLAT[i];
+      const t = MAP.title && f[MAP.title] != null && f[MAP.title] !== '' ? String(f[MAP.title]) : 'Record ' + (i+1);
+      const img = MAP.img ? f[MAP.img] : null;
+      const d = MAP.desc ? f[MAP.desc] : '';
+      return '<div class="card" data-i="' + i + '"><div class="thumb">' +
+        (img ? '<img loading="lazy" src="' + esc(img) + '" alt="" onerror="this.parentNode.innerHTML=\'<span>•</span>\'">' : '<span>' + esc(t.charAt(0).toUpperCase()) + '</span>') +
+        '</div><div class="meta"><h3>' + esc(t) + '</h3>' + (d ? '<p>' + esc(d) + '</p>' : '') + '</div></div>';
+    }).join('') : '<p>No records.</p>';
+  }
+
+  function open(i){
+    const f = FLAT[i], img = MAP.img ? f[MAP.img] : null;
+    const t = MAP.title && f[MAP.title] != null ? f[MAP.title] : 'Record ' + (i+1);
+    $('sheet').innerHTML = (img ? '<div class="img"><img src="' + esc(img) + '" alt=""></div>' : '') +
+      '<div class="body"><button class="btn close" id="x">Close</button><h2>' + esc(t) + '</h2><table>' +
+      Object.keys(f).map(k => '<tr><td>' + esc(k) + '</td><td>' + esc(f[k] ?? '') + '</td></tr>').join('') + '</table></div>';
+    $('modal').classList.add('open'); $('x').onclick = close;
+  }
+  function close(){ $('modal').classList.remove('open'); }
+
+  async function run(){
+    show('');
+    let url = $('url').value.trim();
+    if (!url) return show('Enter an endpoint.');
+    const key = $('key').value.trim(), mode = $('auth').value, name = $('authName').value.trim();
+    const headers = {Accept:'application/json'};
+    if (key){
+      if (mode === 'bearer') headers.Authorization = 'Bearer ' + key;
+      else if (mode === 'header') headers[name || 'X-API-Key'] = key;
+      else { try { const u = new URL(url); u.searchParams.set(name || 'api_key', key); url = u.toString(); } catch(e){ return show('Invalid URL.'); } }
+    }
+    $('go').disabled = true; $('go').textContent = 'Fetching…';
+    const t0 = performance.now();
+    try{
+      const res = await fetch(url, {headers});
+      const text = await res.text(), ms = Math.round(performance.now() - t0);
+      let d;
+      try { d = JSON.parse(text); } catch(e){ info(res.status, ms, text.length, 0, 0); return show('Not valid JSON:<br><code>' + esc(text.slice(0,250)) + '</code>'); }
+      ingest(d, {status:res.status, ms, size:text.length});
+      if (!res.ok) show('HTTP ' + res.status + ' — response shown below.');
+    }catch(e){
+      show('Network error: ' + esc(e.message) + '. The API may block browser (CORS) requests.');
+    }finally{ $('go').disabled = false; $('go').textContent = 'Fetch'; }
+  }
+
+  $('go').onclick = run;
+  ['url','key'].forEach(id => $(id).addEventListener('keydown', e => e.key === 'Enter' && run()));
+  $('eye').onclick = () => { const k = $('key'), s = k.type === 'password'; k.type = s ? 'text' : 'password'; $('eye').textContent = s ? 'Hide' : 'Show'; };
+  $('auth').onchange = () => {
+    const v = $('auth').value; $('authName').style.display = v === 'bearer' ? 'none' : 'block';
+    $('authName').value = v === 'query' ? 'api_key' : 'X-API-Key';
+  };
+  $('q').oninput = render;
+  $('rawBtn').onclick = () => {
+    const raw = $('raw').style.display === 'none';
+    $('raw').style.display = raw ? 'block' : 'none'; $('gallery').style.display = raw ? 'none' : 'grid';
+    $('rawBtn').textContent = raw ? 'Gallery' : 'Raw JSON';
+  };
+  document.addEventListener('click', e => { const c = e.target.closest('.card'); if (c) open(+c.dataset.i); if (e.target.id === 'modal') close(); });
+  document.addEventListener('keydown', e => e.key === 'Escape' && close());
+  $('sample').onclick = () => {
+    const n = ['Linear Highbay 150W','Street Light 100W','Flood Light 200W','Panel 40W','Tri-proof 36W','Downlight 18W','Track Spot 30W','Bollard 12W'];
+    const d = {data:{items:n.map((x,i)=>({id:'LX-'+(101+i), name:x, category:['Industrial','Street','Flood','Office','Industrial','Retail','Retail','Landscape'][i], power_w:[150,100,200,40,36,18,30,12][i], cct_k:[4000,5700,5000,4000,4000,3000,3000,2700][i], image:'https://picsum.photos/seed/lx'+i+'/640/480'}))}};
+    ingest(d, {status:200, ms:0, size:JSON.stringify(d).length});
+  };
+})();
+</script>
+</body>
+</html>

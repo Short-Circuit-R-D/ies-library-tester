@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LuxScale · API Gallery</title>
+<title>LuxScale · IES Library Gallery</title>
 <link rel="icon" href="https://studio.lxscale.com/icons/lxscale%20icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,8 +12,7 @@
 /* LuxScale brand identity */
 :root{
   --red:#c91d26;
-  --orange:#f47937; --yellow:#f7de65; --cream:#fbf3cf; --blue:#3ab1d4;
-  --ink:#131d20; --teal1:#263a40; --teal2:#395760; --teal3:#4c7480;
+  --ink:#131d20; --teal3:#4c7480;
   --paper:#f5f1ef; --sand1:#ebe4e0; --sand2:#e1d7d0; --sand3:#d7cac1;
   --grad:linear-gradient(90deg,#f47937 0%,#f7de65 26.5%,#fbf3cf 46.8%,#3ab1d4 100%);
   --font:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,sans-serif;
@@ -26,31 +25,31 @@ header{padding:28px 0 8px}
 header img{height:40px;display:block}
 .bar{height:4px;background:var(--grad);margin:20px 0 32px}
 
-.form{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
-@media(max-width:800px){.form{grid-template-columns:1fr}}
 label{display:block;font-size:12px;font-weight:500;color:var(--teal3);margin-bottom:6px}
 input,select{width:100%;background:#fff;border:1px solid var(--sand3);color:var(--ink);padding:12px 14px;font:400 14px var(--font);border-radius:6px;outline:none}
 input:focus,select:focus{border-color:var(--ink)}
+.mono{font-family:var(--mono);font-size:13px}
+.line{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.line>div{flex:1;min-width:150px}
+.line>.fit{flex:0 0 auto;min-width:0}
 .keyrow{display:flex;gap:8px}
-.keyrow input{font-family:var(--mono);font-size:13px}
 .btn{font:500 14px var(--font);padding:12px 20px;border-radius:6px;border:1px solid var(--sand3);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
 .btn:hover{border-color:var(--ink)}
 .btn.red{background:var(--red);border-color:var(--red);color:#fff}
 .btn.red:hover{background:#a8161e;border-color:#a8161e}
 .btn:disabled{opacity:.6;cursor:wait}
-.row2{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap}
-.row2 select{width:auto}
-.row2 input{width:200px}
 .link{background:none;border:0;color:var(--teal3);font:400 13px var(--font);cursor:pointer;text-decoration:underline;padding:0}
+.hide{display:none!important}
 
-#info{margin:24px 0 0;font-size:13px;color:var(--teal3);display:none;font-family:var(--mono)}
+#info{margin-top:22px;font-size:12px;color:var(--teal3);display:none;font-family:var(--mono);word-break:break-all}
 #info b{color:var(--ink);font-weight:500}
 #info .bad{color:var(--red)}
 #err{display:none;margin-top:16px;padding:12px 16px;border-left:3px solid var(--red);background:var(--sand1);font-size:14px}
 
-#out{margin:28px 0 80px;display:none}
-.tools{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
-.tools input{max-width:280px}
+#out{margin:24px 0 80px;display:none}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.tools .l,.tools .r{display:flex;gap:16px;align-items:center}
+.tools input{width:240px}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .card{background:var(--sand1);border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
 .card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(19,29,32,.12)}
@@ -60,7 +59,7 @@ input:focus,select:focus{border-color:var(--ink)}
 .meta{padding:14px 16px 16px}
 .meta h3{font:500 15px/1.3 var(--font);word-break:break-word}
 .meta p{font-size:13px;color:var(--teal3);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-
+.pager{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:28px;font-size:13px;color:var(--teal3)}
 pre{background:var(--ink);color:var(--paper);padding:20px;border-radius:8px;overflow:auto;max-height:70vh;font:12px/1.6 var(--mono)}
 
 #modal{position:fixed;inset:0;background:rgba(19,29,32,.72);display:none;align-items:center;justify-content:center;padding:4vw;z-index:20}
@@ -82,30 +81,33 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
   <header><img src="https://studio.lxscale.com/icons/lxscale%20icon.svg" alt="LuxScale"></header>
   <div class="bar"></div>
 
-  <div class="form">
-    <div>
-      <label for="url">Endpoint</label>
-      <input id="url" type="url" placeholder="https://api.example.com/items" autocomplete="off" spellcheck="false">
-    </div>
-    <div>
+  <div class="line">
+    <div style="flex:2">
       <label for="key">API key</label>
       <div class="keyrow">
-        <input id="key" type="password" placeholder="Paste key" autocomplete="off" spellcheck="false">
+        <input id="key" class="mono" type="password" placeholder="Paste key" autocomplete="off" spellcheck="false">
         <button class="btn" id="eye" type="button">Show</button>
       </div>
     </div>
-    <button class="btn red" id="go">Fetch</button>
+    <div>
+      <label for="mode">Request</label>
+      <select id="mode">
+        <option value="manufacturers">Manufacturers</option>
+        <option value="tags">Tags</option>
+        <option value="manufacturer">IES of a manufacturer</option>
+        <option value="tag">IES of a tag</option>
+        <option value="ies">Data of an IES</option>
+        <option value="favorites">Favorites</option>
+      </select>
+    </div>
+    <div class="fit" id="uidBox"><label for="uid">UID</label><input id="uid" class="mono" style="width:90px" placeholder="2"></div>
+    <div class="fit" id="pageBox"><label for="page">Page</label><input id="page" class="mono" style="width:70px" value="0"></div>
+    <div id="hashBox"><label for="hash">IES hash</label><input id="hash" class="mono" placeholder="0001a6e2e7bfc5bf…"></div>
+    <div class="fit"><button class="btn red" id="go">Fetch</button></div>
   </div>
-
-  <div class="row2">
-    <select id="auth" aria-label="Send key as">
-      <option value="bearer">Bearer token</option>
-      <option value="header">Custom header</option>
-      <option value="query">Query param</option>
-    </select>
-    <input id="authName" placeholder="Name" style="display:none" autocomplete="off">
-    <input id="path" placeholder="Data path (optional)" autocomplete="off">
+  <div style="margin-top:12px;display:flex;gap:16px;align-items:center">
     <button class="link" id="sample" type="button">Sample data</button>
+    <input id="proxy" class="mono" style="max-width:340px;padding:8px 10px;font-size:12px" placeholder="CORS proxy prefix (optional)" autocomplete="off">
   </div>
 
   <div id="err"></div>
@@ -113,11 +115,14 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
 
   <section id="out">
     <div class="tools">
-      <input id="q" placeholder="Filter…" autocomplete="off">
-      <button class="link" id="rawBtn" type="button">Raw JSON</button>
+      <div class="l"><button class="link hide" id="back" type="button">← Back</button><input id="q" placeholder="Filter…" autocomplete="off"></div>
+      <div class="r"><button class="link" id="rawBtn" type="button">Raw JSON</button></div>
     </div>
     <div class="gallery" id="gallery"></div>
-    <div id="raw" style="display:none"></div>
+    <div id="raw" class="hide"></div>
+    <div class="pager hide" id="pager">
+      <button class="btn" id="prev">Prev</button><span id="pg"></span><button class="btn" id="next">Next</button>
+    </div>
   </section>
 </div>
 
@@ -126,19 +131,40 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
 <script>
 (function(){
   const $ = id => document.getElementById(id);
+  const BASE = 'https://ieslibrary.com/api/';
   const IMG_RE = /\.(png|jpe?g|gif|webp|svg|avif|bmp)(\?.*)?$/i;
   const IMG_KEY = /(image|img|photo|thumb|picture|cover|logo|avatar|banner|icon|poster)/i;
-  const TITLE = ['name','title','label','display_name','id','code','sku','slug'];
-  const DESC = ['description','summary','subtitle','desc','text','category','type'];
-  let RAW, FLAT = [], MAP = {};
+  const TITLE = ['name','title','label','manufacturer','tag','filename','file','id','uid','hash'];
+  const DESC = ['description','summary','subtitle','desc','manufacturer','category','type','luminaire'];
+  let RAW, FLAT = [], MAP = {}, CUR = 'manufacturers', STACK = [];
 
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
   const leaf = k => k.split('.').pop().replace(/\[\d+\]/g,'').toLowerCase();
   const isImg = (k,v) => typeof v === 'string' && (v.startsWith('data:image') || IMG_RE.test(v) || (IMG_KEY.test(k) && /^(https?:)?\/\//.test(v)));
 
-  function records(d, path){
-    if (path){ const r = path.split('.').filter(Boolean).reduce((o,p)=>o==null?o:o[p], d); return Array.isArray(r) ? r : isObj(r) ? [r] : []; }
+  /* ---- request building ---- */
+  function build(m){
+    const key = $('key').value.trim(), uid = $('uid').value.trim(), page = $('page').value.trim() || '0', hash = $('hash').value.trim();
+    const need = (v, n) => { if (!v) throw new Error(n + ' is required.'); return v; };
+    switch (m){
+      case 'manufacturers': return {path:'manufacturers/data.json'};
+      case 'tags': return {path:'tags/data.json'};
+      case 'manufacturer': return {path:'manufacturer/uid:' + need(uid,'UID') + '/page:' + page + '/key:' + need(key,'API key') + '/data.json'};
+      case 'tag': return {path:'tag/uid:' + need(uid,'UID') + '/page:' + page + '/key:' + need(key,'API key') + '/data.json'};
+      case 'ies': return {path:'ies/hash:' + need(hash,'IES hash') + '/key:' + need(key,'API key') + '/data.json'};
+      case 'favorites': return {path:'favorites/key:' + need(key,'API key') + '/data.json'};
+    }
+  }
+  function syncFields(){
+    const m = $('mode').value;
+    $('uidBox').classList.toggle('hide', !(m === 'manufacturer' || m === 'tag'));
+    $('pageBox').classList.toggle('hide', !(m === 'manufacturer' || m === 'tag'));
+    $('hashBox').classList.toggle('hide', m !== 'ies');
+  }
+
+  /* ---- parsing ---- */
+  function records(d){
     if (Array.isArray(d)) return d;
     const q = [d];
     while (q.length){
@@ -146,7 +172,13 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
       if (Array.isArray(c) && c.some(isObj)) return c;
       if (isObj(c)) Object.values(c).forEach(v => v && typeof v === 'object' && q.push(v));
     }
-    return isObj(d) ? [d] : [];
+    if (isObj(d)){
+      // object keyed by id -> list of values
+      const vals = Object.values(d);
+      if (vals.length > 1 && vals.every(isObj)) return vals;
+      return [d];
+    }
+    return [];
   }
   function flat(o, pre='', out={}, depth=0){
     if (Array.isArray(o)){
@@ -161,35 +193,40 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
   }
   function detect(){
     const ks = []; FLAT.slice(0,50).forEach(f => Object.keys(f).forEach(k => ks.includes(k) || ks.push(k)));
-    MAP.title = TITLE.map(t => ks.find(k => leaf(k) === t)).find(Boolean) || ks.find(k => FLAT.some(f => typeof f[k] === 'string')) || null;
+    MAP.title = TITLE.map(t => ks.find(k => leaf(k) === t && FLAT.some(f => typeof f[k] === 'string' && f[k]))).find(Boolean) || ks.find(k => FLAT.some(f => typeof f[k] === 'string')) || ks[0] || null;
     MAP.img   = ks.find(k => FLAT.some(f => isImg(k, f[k]))) || null;
     MAP.desc  = DESC.map(t => ks.find(k => leaf(k) === t && k !== MAP.title)).find(Boolean) || null;
+    MAP.uid   = ['uid','id'].map(t => ks.find(k => leaf(k) === t)).find(Boolean) || null;
+    MAP.hash  = ks.find(k => leaf(k) === 'hash') || null;
     return ks.length;
   }
 
+  /* ---- ui ---- */
   function show(msg){ const e = $('err'); e.innerHTML = msg; e.style.display = msg ? 'block' : 'none'; }
-  function info(status, ms, size, n, f){
+  function info(url, status, ms, size, n, f){
     const ok = status >= 200 && status < 300;
     $('info').style.display = 'block';
     $('info').innerHTML = '<b class="' + (ok ? '' : 'bad') + '">' + (status || '—') + '</b> · ' + ms + ' ms · ' +
-      (size > 1024 ? (size/1024).toFixed(1) + ' KB' : size + ' B') + ' · <b>' + n + '</b> records · ' + f + ' fields';
+      (size > 1024 ? (size/1024).toFixed(1) + ' KB' : size + ' B') + ' · <b>' + n + '</b> records · ' + f + ' fields<br>' + esc(url);
   }
-
   function ingest(d, meta){
-    RAW = d;
-    const recs = records(d, $('path').value.trim());
+    RAW = d; CUR = meta.mode;
+    const recs = records(d);
     FLAT = recs.map(r => isObj(r) || Array.isArray(r) ? flat(r) : {value: r});
     const nf = detect();
-    info(meta.status, meta.ms, meta.size, recs.length, nf);
+    info(meta.url, meta.status, meta.ms, meta.size, recs.length, nf);
     $('out').style.display = 'block';
     $('raw').innerHTML = '<pre>' + esc(JSON.stringify(d, null, 2)) + '</pre>';
+    const paged = CUR === 'manufacturer' || CUR === 'tag';
+    $('pager').classList.toggle('hide', !paged);
+    $('pg').textContent = 'Page ' + ($('page').value || 0);
+    $('back').classList.toggle('hide', !STACK.length);
     render();
   }
-
   function render(){
     const q = $('q').value.trim().toLowerCase();
     const ids = FLAT.map((_,i)=>i).filter(i => !q || Object.values(FLAT[i]).some(v => String(v).toLowerCase().includes(q)));
-    $('gallery').innerHTML = ids.length ? ids.slice(0,300).map(i => {
+    $('gallery').innerHTML = ids.length ? ids.slice(0,400).map(i => {
       const f = FLAT[i];
       const t = MAP.title && f[MAP.title] != null && f[MAP.title] !== '' ? String(f[MAP.title]) : 'Record ' + (i+1);
       const img = MAP.img ? f[MAP.img] : null;
@@ -199,8 +236,7 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
         '</div><div class="meta"><h3>' + esc(t) + '</h3>' + (d ? '<p>' + esc(d) + '</p>' : '') + '</div></div>';
     }).join('') : '<p>No records.</p>';
   }
-
-  function open(i){
+  function detail(i){
     const f = FLAT[i], img = MAP.img ? f[MAP.img] : null;
     const t = MAP.title && f[MAP.title] != null ? f[MAP.title] : 'Record ' + (i+1);
     $('sheet').innerHTML = (img ? '<div class="img"><img src="' + esc(img) + '" alt=""></div>' : '') +
@@ -210,51 +246,75 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
   }
   function close(){ $('modal').classList.remove('open'); }
 
+  /* ---- drill-down: manufacturer/tag card -> its IES list; IES card -> IES data ---- */
+  function drill(i){
+    const f = FLAT[i];
+    const snap = {mode:$('mode').value, uid:$('uid').value, page:$('page').value, hash:$('hash').value};
+    let next = null;
+    if ((CUR === 'manufacturers' || CUR === 'tags') && MAP.uid && f[MAP.uid] != null)
+      next = {mode: CUR === 'tags' ? 'tag' : 'manufacturer', uid: String(f[MAP.uid]), page:'0'};
+    else if ((CUR === 'manufacturer' || CUR === 'tag' || CUR === 'favorites') && MAP.hash && f[MAP.hash])
+      next = {mode:'ies', hash: String(f[MAP.hash])};
+    if (!next) return detail(i);
+    STACK.push(snap);
+    apply(next); run();
+  }
+  function apply(s){
+    if (s.mode) $('mode').value = s.mode;
+    if (s.uid != null) $('uid').value = s.uid;
+    if (s.page != null) $('page').value = s.page;
+    if (s.hash != null) $('hash').value = s.hash;
+    syncFields();
+  }
+
+  /* ---- fetch ---- */
   async function run(){
     show('');
-    let url = $('url').value.trim();
-    if (!url) return show('Enter an endpoint.');
-    const key = $('key').value.trim(), mode = $('auth').value, name = $('authName').value.trim();
-    const headers = {Accept:'application/json'};
-    if (key){
-      if (mode === 'bearer') headers.Authorization = 'Bearer ' + key;
-      else if (mode === 'header') headers[name || 'X-API-Key'] = key;
-      else { try { const u = new URL(url); u.searchParams.set(name || 'api_key', key); url = u.toString(); } catch(e){ return show('Invalid URL.'); } }
-    }
+    const mode = $('mode').value; let req;
+    try { req = build(mode); } catch(e){ return show(esc(e.message)); }
+    const url = BASE + req.path;
+    const shown = url.replace(/key:[^/]+/, 'key:••••••');
+    const proxy = $('proxy').value.trim();
+    const target = proxy ? proxy + encodeURIComponent(url) : url;
     $('go').disabled = true; $('go').textContent = 'Fetching…';
     const t0 = performance.now();
     try{
-      const res = await fetch(url, {headers});
+      const res = await fetch(target, {headers:{Accept:'application/json'}});
       const text = await res.text(), ms = Math.round(performance.now() - t0);
       let d;
-      try { d = JSON.parse(text); } catch(e){ info(res.status, ms, text.length, 0, 0); return show('Not valid JSON:<br><code>' + esc(text.slice(0,250)) + '</code>'); }
-      ingest(d, {status:res.status, ms, size:text.length});
+      try { d = JSON.parse(text); } catch(e){ info(shown, res.status, ms, text.length, 0, 0); return show('Not valid JSON:<br><code>' + esc(text.slice(0,250)) + '</code>'); }
+      ingest(d, {status:res.status, ms, size:text.length, url:shown, mode});
       if (!res.ok) show('HTTP ' + res.status + ' — response shown below.');
     }catch(e){
-      show('Network error: ' + esc(e.message) + '. The API may block browser (CORS) requests.');
+      show('Network error: ' + esc(e.message) + '. The API may block browser (CORS) requests. Try a CORS proxy prefix in the field above.');
     }finally{ $('go').disabled = false; $('go').textContent = 'Fetch'; }
   }
 
-  $('go').onclick = run;
-  ['url','key'].forEach(id => $(id).addEventListener('keydown', e => e.key === 'Enter' && run()));
+  /* ---- events ---- */
+  $('go').onclick = () => { STACK = []; run(); };
+  document.querySelectorAll('input').forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter' && el.id !== 'q'){ STACK = []; run(); } }));
+  $('mode').onchange = syncFields;
   $('eye').onclick = () => { const k = $('key'), s = k.type === 'password'; k.type = s ? 'text' : 'password'; $('eye').textContent = s ? 'Hide' : 'Show'; };
-  $('auth').onchange = () => {
-    const v = $('auth').value; $('authName').style.display = v === 'bearer' ? 'none' : 'block';
-    $('authName').value = v === 'query' ? 'api_key' : 'X-API-Key';
-  };
   $('q').oninput = render;
   $('rawBtn').onclick = () => {
-    const raw = $('raw').style.display === 'none';
-    $('raw').style.display = raw ? 'block' : 'none'; $('gallery').style.display = raw ? 'none' : 'grid';
+    const raw = $('raw').classList.contains('hide');
+    $('raw').classList.toggle('hide', !raw); $('gallery').classList.toggle('hide', raw);
     $('rawBtn').textContent = raw ? 'Gallery' : 'Raw JSON';
   };
-  document.addEventListener('click', e => { const c = e.target.closest('.card'); if (c) open(+c.dataset.i); if (e.target.id === 'modal') close(); });
+  $('back').onclick = () => { const s = STACK.pop(); if (s){ apply(s); run(); } };
+  $('prev').onclick = () => { const p = Math.max(0, (+$('page').value || 0) - 1); $('page').value = p; run(); };
+  $('next').onclick = () => { $('page').value = (+$('page').value || 0) + 1; run(); };
+  document.addEventListener('click', e => {
+    const c = e.target.closest('.card'); if (c) drill(+c.dataset.i);
+    if (e.target.id === 'modal') close();
+  });
   document.addEventListener('keydown', e => e.key === 'Escape' && close());
   $('sample').onclick = () => {
-    const n = ['Linear Highbay 150W','Street Light 100W','Flood Light 200W','Panel 40W','Tri-proof 36W','Downlight 18W','Track Spot 30W','Bollard 12W'];
-    const d = {data:{items:n.map((x,i)=>({id:'LX-'+(101+i), name:x, category:['Industrial','Street','Flood','Office','Industrial','Retail','Retail','Landscape'][i], power_w:[150,100,200,40,36,18,30,12][i], cct_k:[4000,5700,5000,4000,4000,3000,3000,2700][i], image:'https://picsum.photos/seed/lx'+i+'/640/480'}))}};
-    ingest(d, {status:200, ms:0, size:JSON.stringify(d).length});
+    const n = ['Philips','Osram','Zumtobel','Erco','Thorn','iGuzzini','Trilux','Ledvance'];
+    const d = n.map((x,i) => ({uid:i+1, name:x, ies_count:[1200,980,640,410,820,530,760,300][i], country:['NL','DE','AT','DE','UK','IT','DE','DE'][i]}));
+    ingest(d, {status:200, ms:0, size:JSON.stringify(d).length, url:'(sample data)', mode:'manufacturers'});
   };
+  syncFields();
 })();
 </script>
 </body>
