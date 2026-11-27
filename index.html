@@ -86,6 +86,9 @@ a.btn{text-decoration:none;display:inline-block}
 .legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
 details.all{margin-top:18px}
 details.all summary{cursor:pointer;font-size:13px;color:var(--teal3)}
+
+a.tag{display:inline-block;background:var(--sand1);border:1px solid var(--sand3);color:var(--ink);text-decoration:none;font-size:12px;font-weight:500;padding:3px 10px;border-radius:999px}
+a.tag:hover{border-color:var(--ink)}
 </style>
 </head>
 <body>
@@ -253,6 +256,14 @@ details.all summary{cursor:pointer;font-size:13px;color:var(--teal3)}
   const urlOf = (f, name) => { const k = Object.keys(f).find(k => leaf(k) === name); return k ? f[k] : null; };
   const proxied = u => { const p = $('proxy').value.trim(); return p ? p + encodeURIComponent(u) : u; };
 
+  const isUrl = v => typeof v === 'string' && /^https?:\/\/\S+$/.test(v);
+  const cell = (k, v) => {
+    if (!isUrl(v)) return esc(v ?? '');
+    const name = k.split('.').pop().replace(/\[\d+\]/g, '').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\s*\burl\b/i, '').trim();
+    const label = name ? name.charAt(0).toUpperCase() + name.slice(1) : 'Link';
+    return '<a class="tag" href="' + esc(v) + '" target="_blank" rel="noopener">' + esc(label) + ' ↗</a>';
+  };
+
   function detail(i){
     const f = FLAT[i], img = MAP.img ? f[MAP.img] : null;
     const t = MAP.title && f[MAP.title] != null ? f[MAP.title] : 'Record ' + (i+1);
@@ -266,7 +277,7 @@ details.all summary{cursor:pointer;font-size:13px;color:var(--teal3)}
     $('sheet').innerHTML = (img ? '<div class="img"><img src="' + esc(img) + '" alt=""></div>' : '') +
       '<div class="body"><button class="btn close" id="x">Close</button><h2>' + esc(t) + '</h2>' + acts +
       '<details class="all"' + (acts ? '' : ' open') + '><summary>All fields</summary><table>' +
-      Object.keys(f).map(k => '<tr><td>' + esc(k) + '</td><td>' + esc(f[k] ?? '') + '</td></tr>').join('') + '</table></details></div>';
+      Object.keys(f).map(k => '<tr><td>' + esc(k) + '</td><td>' + cell(k, f[k]) + '</td></tr>').join('') + '</table></details></div>';
     $('modal').classList.add('open'); $('x').onclick = close;
     if (iesUrl){ $('draw').onclick = () => drawIes(iesUrl); drawIes(iesUrl); }
   }
