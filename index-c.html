@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LuxScale · IES Library Gallery</title>
+<link rel="icon" href="https://studio.lxscale.com/icons/lxscale%20icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+<style>
+/* LuxScale brand identity */
+:root{
+  --red:#c91d26;
+  --ink:#131d20; --teal3:#4c7480;
+  --paper:#f5f1ef; --sand1:#ebe4e0; --sand2:#e1d7d0; --sand3:#d7cac1;
+  --grad:linear-gradient(90deg,#f47937 0%,#f7de65 26.5%,#fbf3cf 46.8%,#3ab1d4 100%);
+  --font:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font:400 15px/1.6 var(--font);min-height:100vh}
+.wrap{width:min(1200px,92%);margin:0 auto}
+header{padding:28px 0 8px}
+header img{height:40px;display:block}
+.bar{height:4px;background:var(--grad);margin:20px 0 32px}
+
+label{display:block;font-size:12px;font-weight:500;color:var(--teal3);margin-bottom:6px}
+input,select{width:100%;background:#fff;border:1px solid var(--sand3);color:var(--ink);padding:12px 14px;font:400 14px var(--font);border-radius:6px;outline:none}
+input:focus,select:focus{border-color:var(--ink)}
+.mono{font-family:var(--mono);font-size:13px}
+.line{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.line>div{flex:1;min-width:150px}
+.line>.fit{flex:0 0 auto;min-width:0}
+.keyrow{display:flex;gap:8px}
+.btn{font:500 14px var(--font);padding:12px 20px;border-radius:6px;border:1px solid var(--sand3);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn.red:hover{background:#a8161e;border-color:#a8161e}
+.btn:disabled{opacity:.6;cursor:wait}
+.link{background:none;border:0;color:var(--teal3);font:400 13px var(--font);cursor:pointer;text-decoration:underline;padding:0}
+.hide{display:none!important}
+
+#info{margin-top:22px;font-size:12px;color:var(--teal3);display:none;font-family:var(--mono);word-break:break-all}
+#info b{color:var(--ink);font-weight:500}
+#info .bad{color:var(--red)}
+#err{display:none;margin-top:16px;padding:12px 16px;border-left:3px solid var(--red);background:var(--sand1);font-size:14px}
+
+#out{margin:24px 0 80px;display:none}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.tools .l,.tools .r{display:flex;gap:16px;align-items:center}
+.tools input{width:240px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.card{background:var(--sand1);border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(19,29,32,.12)}
+.thumb{aspect-ratio:4/3;background:var(--sand2);display:flex;align-items:center;justify-content:center}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb span{font:500 44px var(--font);color:var(--sand3)}
+.meta{padding:14px 16px 16px}
+.meta h3{font:500 15px/1.3 var(--font);word-break:break-word}
+.meta p{font-size:13px;color:var(--teal3);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pager{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:28px;font-size:13px;color:var(--teal3)}
+pre{background:var(--ink);color:var(--paper);padding:20px;border-radius:8px;overflow:auto;max-height:70vh;font:12px/1.6 var(--mono)}
+
+#modal{position:fixed;inset:0;background:rgba(19,29,32,.72);display:none;align-items:center;justify-content:center;padding:4vw;z-index:20}
+#modal.open{display:flex}
+.sheet{background:var(--paper);width:min(820px,100%);max-height:88vh;overflow:auto;border-radius:10px}
+.sheet .img{background:var(--sand2)}
+.sheet .img img{width:100%;max-height:360px;object-fit:contain;display:block}
+.sheet .body{padding:22px 24px 26px}
+.sheet h2{font:600 22px/1.2 var(--font);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td{padding:8px 0;border-bottom:1px solid var(--sand2);vertical-align:top;word-break:break-word}
+td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(--mono);font-size:12px}
+.close{float:right}
+
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+a.btn{text-decoration:none;display:inline-block}
+.muted{color:var(--teal3);font-size:13px}
+.polar{width:100%;max-width:420px;display:block;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0 6px}
+.stats div{background:var(--sand1);border-radius:6px;padding:10px 12px}
+.stats span{display:block;font-size:11px;color:var(--teal3)}
+.stats b{font:500 17px var(--font)}
+.legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--teal3);margin-bottom:6px}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+details.all{margin-top:18px}
+details.all summary{cursor:pointer;font-size:13px;color:var(--teal3)}
+
+a.tag{display:inline-block;background:var(--sand1);border:1px solid var(--sand3);color:var(--ink);text-decoration:none;font-size:12px;font-weight:500;padding:3px 10px;border-radius:999px}
+a.tag:hover{border-color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header><img src="https://studio.lxscale.com/icons/lxscale%20icon.svg" alt="LuxScale"></header>
+  <div class="bar"></div>
+
+  <div class="line">
+    <div style="flex:2">
+      <label for="key">API key</label>
+      <div class="keyrow">
+        <input id="key" class="mono" type="password" placeholder="Paste key" autocomplete="off" spellcheck="false">
+        <button class="btn" id="eye" type="button">Show</button>
+      </div>
+    </div>
+    <div>
+      <label for="mode">Request</label>
+      <select id="mode">
+        <option value="manufacturers">Manufacturers</option>
+        <option value="tags">Tags</option>
+        <option value="manufacturer">IES of a manufacturer</option>
+        <option value="tag">IES of a tag</option>
+        <option value="ies">Data of an IES</option>
+        <option value="favorites">Favorites</option>
+      </select>
+    </div>
+    <div class="fit" id="uidBox"><label for="uid">UID</label><input id="uid" class="mono" style="width:90px" placeholder="2"></div>
+    <div class="fit" id="pageBox"><label for="page">Page</label><input id="page" class="mono" style="width:70px" value="0"></div>
+    <div id="hashBox"><label for="hash">IES hash</label><input id="hash" class="mono" placeholder="0001a6e2e7bfc5bf…"></div>
+    <div class="fit"><button class="btn red" id="go">Fetch</button></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:16px;align-items:center">
+    <button class="link" id="sample" type="button">Sample data</button>
+    <input id="proxy" class="mono" style="max-width:340px;padding:8px 10px;font-size:12px" placeholder="CORS proxy prefix (optional)" value="https://corsproxy.io/?key=67aa998c&url=" autocomplete="off">
+  </div>
+
+  <div id="err"></div>
+  <div id="info"></div>
+
+  <section id="out">
+    <div class="tools">
+      <div class="l"><button class="link hide" id="back" type="button">← Back</button><input id="q" placeholder="Filter…" autocomplete="off"></div>
+      <div class="r"><button class="link" id="rawBtn" type="button">Raw JSON</button></div>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div id="raw" class="hide"></div>
+    <div class="pager hide" id="pager">
+      <button class="btn" id="prev">Prev</button><span id="pg"></span><button class="btn" id="next">Next</button>
+    </div>
+  </section>
+</div>
+
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const BASE = 'https://ieslibrary.com/api/';
+  const IMG_RE = /\.(png|jpe?g|gif|webp|svg|avif|bmp)(\?.*)?$/i;
+  const IMG_KEY = /(image|img|photo|thumb|picture|cover|logo|avatar|banner|icon|poster)/i;
+  const TITLE = ['name','title','label','manufacturer','tag','filename','file','id','uid','hash'];
+  const DESC = ['description','summary','subtitle','desc','manufacturer','category','type','luminaire'];
+  let RAW, FLAT = [], MAP = {}, CUR = 'manufacturers', STACK = [];
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+  const leaf = k => k.split('.').pop().replace(/\[\d+\]/g,'').toLowerCase();
+  const isImg = (k,v) => typeof v === 'string' && (v.startsWith('data:image') || IMG_RE.test(v) || (IMG_KEY.test(k) && /^(https?:)?\/\//.test(v)));
+
+  /* ---- request building ---- */
+  function build(m){
+    const key = $('key').value.trim(), uid = $('uid').value.trim(), page = $('page').value.trim() || '0', hash = $('hash').value.trim();
+    const need = (v, n) => { if (!v) throw new Error(n + ' is required.'); return v; };
+    switch (m){
+      case 'manufacturers': return {path:'manufacturers/data.json'};
+      case 'tags': return {path:'tags/data.json'};
+      case 'manufacturer': return {path:'manufacturer/uid:' + need(uid,'UID') + '/page:' + page + '/key:' + need(key,'API key') + '/data.json'};
+      case 'tag': return {path:'tag/uid:' + need(uid,'UID') + '/page:' + page + '/key:' + need(key,'API key') + '/data.json'};
+      case 'ies': return {path:'ies/hash:' + need(hash,'IES hash') + '/key:' + need(key,'API key') + '/data.json'};
+      case 'favorites': return {path:'favorites/key:' + need(key,'API key') + '/data.json'};
+    }
+  }
+  function syncFields(){
+    const m = $('mode').value;
+    $('uidBox').classList.toggle('hide', !(m === 'manufacturer' || m === 'tag'));
+    $('pageBox').classList.toggle('hide', !(m === 'manufacturer' || m === 'tag'));
+    $('hashBox').classList.toggle('hide', m !== 'ies');
+  }
+
+  /* ---- parsing ---- */
+  function records(d){
+    if (Array.isArray(d)) return d;
+    const q = [d];
+    while (q.length){
+      const c = q.shift();
+      if (Array.isArray(c) && c.some(isObj)) return c;
+      if (isObj(c)) Object.values(c).forEach(v => v && typeof v === 'object' && q.push(v));
+    }
+    if (isObj(d)){
+      // object keyed by id -> list of values
+      const vals = Object.values(d);
+      if (vals.length > 1 && vals.every(isObj)) return vals;
+      return [d];
+    }
+    return [];
+  }
+  function flat(o, pre='', out={}, depth=0){
+    if (Array.isArray(o)){
+      if (o.every(x => x === null || typeof x !== 'object')) out[pre] = o.join(', ');
+      else if (depth < 3) o.slice(0,20).forEach((x,i) => flat(x, pre+'['+i+']', out, depth+1));
+      else out[pre] = JSON.stringify(o);
+    } else if (isObj(o)){
+      if (depth > 3) out[pre] = JSON.stringify(o);
+      else Object.keys(o).forEach(k => flat(o[k], pre ? pre+'.'+k : k, out, depth+1));
+    } else out[pre] = o;
+    return out;
+  }
+  function detect(){
+    const ks = []; FLAT.slice(0,50).forEach(f => Object.keys(f).forEach(k => ks.includes(k) || ks.push(k)));
+    MAP.title = TITLE.map(t => ks.find(k => leaf(k) === t && FLAT.some(f => typeof f[k] === 'string' && f[k]))).find(Boolean) || ks.find(k => FLAT.some(f => typeof f[k] === 'string')) || ks[0] || null;
+    MAP.img   = ks.find(k => FLAT.some(f => isImg(k, f[k]))) || null;
+    MAP.desc  = DESC.map(t => ks.find(k => leaf(k) === t && k !== MAP.title)).find(Boolean) || null;
+    MAP.uid   = ['uid','id'].map(t => ks.find(k => leaf(k) === t)).find(Boolean) || null;
+    MAP.hash  = ks.find(k => leaf(k) === 'hash') || null;
+    return ks.length;
+  }
+
+  /* ---- ui ---- */
+  function show(msg){ const e = $('err'); e.innerHTML = msg; e.style.display = msg ? 'block' : 'none'; }
+  function info(url, status, ms, size, n, f){
+    const ok = status >= 200 && status < 300;
+    $('info').style.display = 'block';
+    $('info').innerHTML = '<b class="' + (ok ? '' : 'bad') + '">' + (status || '—') + '</b> · ' + ms + ' ms · ' +
+      (size > 1024 ? (size/1024).toFixed(1) + ' KB' : size + ' B') + ' · <b>' + n + '</b> records · ' + f + ' fields<br>' + esc(url);
+  }
+  function ingest(d, meta){
+    RAW = d; CUR = meta.mode;
+    const recs = records(d);
+    FLAT = recs.map(r => isObj(r) || Array.isArray(r) ? flat(r) : {value: r});
+    const nf = detect();
+    info(meta.url, meta.status, meta.ms, meta.size, recs.length, nf);
+    $('out').style.display = 'block';
+    $('raw').innerHTML = '<pre>' + esc(JSON.stringify(d, null, 2)) + '</pre>';
+    const paged = CUR === 'manufacturer' || CUR === 'tag';
+    $('pager').classList.toggle('hide', !paged);
+    $('pg').textContent = 'Page ' + ($('page').value || 0);
+    $('back').classList.toggle('hide', !STACK.length);
+    render();
+    if (CUR === 'ies' && FLAT.length === 1) detail(0);
+  }
+  function render(){
+    const q = $('q').value.trim().toLowerCase();
+    const ids = FLAT.map((_,i)=>i).filter(i => !q || Object.values(FLAT[i]).some(v => String(v).toLowerCase().includes(q)));
+    $('gallery').innerHTML = ids.length ? ids.slice(0,400).map(i => {
+      const f = FLAT[i];
+      const t = MAP.title && f[MAP.title] != null && f[MAP.title] !== '' ? String(f[MAP.title]) : 'Record ' + (i+1);
+      const img = MAP.img ? f[MAP.img] : null;
+      const d = MAP.desc ? f[MAP.desc] : '';
+      return '<div class="card" data-i="' + i + '"><div class="thumb">' +
+        (img ? '<img loading="lazy" src="' + esc(img) + '" alt="" onerror="this.parentNode.innerHTML=\'<span>•</span>\'">' : '<span>' + esc(t.charAt(0).toUpperCase()) + '</span>') +
+        '</div><div class="meta"><h3>' + esc(t) + '</h3>' + (d ? '<p>' + esc(d) + '</p>' : '') + '</div></div>';
+    }).join('') : '<p>No records.</p>';
+  }
+  const urlOf = (f, name) => { const k = Object.keys(f).find(k => leaf(k) === name); return k ? f[k] : null; };
+  const proxied = u => { const p = $('proxy').value.trim(); return p ? p + encodeURIComponent(u) : u; };
+
+  const isUrl = v => typeof v === 'string' && /^https?:\/\/\S+$/.test(v);
+  const cell = (k, v) => {
+    if (!isUrl(v)) return esc(v ?? '');
+    const name = k.split('.').pop().replace(/\[\d+\]/g, '').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\s*\burl\b/i, '').trim();
+    const label = name ? name.charAt(0).toUpperCase() + name.slice(1) : 'Link';
+    return '<a class="tag" href="' + esc(v) + '" target="_blank" rel="noopener">' + esc(label) + ' ↗</a>';
+  };
+
+  function detail(i){
+    const f = FLAT[i], img = MAP.img ? f[MAP.img] : null;
+    const t = MAP.title && f[MAP.title] != null ? f[MAP.title] : 'Record ' + (i+1);
+    const iesUrl = urlOf(f, 'downloadurlies'), ldtUrl = urlOf(f, 'downloadurlldt');
+    const acts = (iesUrl || ldtUrl) ?
+      '<div class="acts">' +
+      (iesUrl ? '<a class="btn red" href="' + esc(iesUrl) + '" target="_blank" rel="noopener">Download IES</a>' : '') +
+      (ldtUrl ? '<a class="btn" href="' + esc(ldtUrl) + '" target="_blank" rel="noopener">Download LDT</a>' : '') +
+      (iesUrl ? '<button class="btn" id="draw" type="button">Redraw</button>' : '') +
+      '</div><div id="plot"></div>' : '';
+    $('sheet').innerHTML = (img ? '<div class="img"><img src="' + esc(img) + '" alt=""></div>' : '') +
+      '<div class="body"><button class="btn close" id="x">Close</button><h2>' + esc(t) + '</h2>' + acts +
+      '<details class="all"' + (acts ? '' : ' open') + '><summary>All fields</summary><table>' +
+      Object.keys(f).map(k => '<tr><td>' + esc(k) + '</td><td>' + cell(k, f[k]) + '</td></tr>').join('') + '</table></details></div>';
+    $('modal').classList.add('open'); $('x').onclick = close;
+    if (iesUrl){ $('draw').onclick = () => drawIes(iesUrl); drawIes(iesUrl); }
+  }
+
+  /* ---- IES (LM-63) parsing and beam angle ---- */
+  function parseIes(t){
+    const lines = t.replace(/\r/g,'').split('\n');
+    const ti = lines.findIndex(l => /^\s*TILT\s*=/i.test(l));
+    if (ti < 0) throw new Error('Not a valid IES file');
+    const tilt = lines[ti].split('=')[1].trim().toUpperCase();
+    const r = lines.slice(ti+1).join(' ').split(/[\s,]+/).filter(Boolean).map(Number);
+    let p = 0;
+    if (tilt === 'INCLUDE'){ p++; const n = r[p++]; p += 2*n; }
+    const nL = r[p++], lpl = r[p++], mult = r[p++], nV = r[p++], nH = r[p++], type = r[p++], units = r[p++];
+    p += 3; p += 3; const watts = r[p-1];
+    const vA = r.slice(p, p+nV); p += nV;
+    const hA = r.slice(p, p+nH); p += nH;
+    const cd = [];
+    for (let h = 0; h < nH; h++){ cd.push(r.slice(p, p+nV).map(x => x * mult)); p += nV; }
+    if (!nV || !nH || cd.some(row => row.length !== nV || row.some(isNaN))) throw new Error('IES data is incomplete');
+    return {lumens: lpl > 0 ? nL * lpl : null, type, units, watts, vA, hA, cd};
+  }
+  function cdAt(m, c, gi){
+    const H = m.hA, n = H.length; c = ((c % 360) + 360) % 360;
+    if (n === 1) return m.cd[0][gi];
+    const last = H[n-1];
+    if (last <= 90){ if (c > 180) c = 360 - c; if (c > 90) c = 180 - c; }
+    else if (last <= 180){ if (c > 180) c = 360 - c; }
+    if (c <= H[0]) return m.cd[0][gi];
+    for (let k = 1; k < n; k++) if (c <= H[k]){ const t = (c - H[k-1]) / (H[k] - H[k-1]); return m.cd[k-1][gi]*(1-t) + m.cd[k][gi]*t; }
+    return m.cd[n-1][gi];
+  }
+  function profile(m, c){
+    const pos = m.vA.map((g,gi) => ({a:g, i:cdAt(m,c,gi)}));
+    const neg = m.vA.map((g,gi) => ({a:-g, i:cdAt(m,c+180,gi)})).reverse();
+    return neg.concat(pos.filter(q => q.a !== 0));
+  }
+  function cross(prof, frac, imax){
+    const thr = frac * imax; let pk = 0;
+    prof.forEach((q,k) => { if (q.i > prof[pk].i) pk = k; });
+    if (prof[pk].i < thr) return {l:0, r:0, w:0};
+    let r = prof[prof.length-1].a, l = prof[0].a;
+    for (let k = pk; k < prof.length-1; k++) if (prof[k+1].i < thr){ const t = (prof[k].i-thr)/(prof[k].i-prof[k+1].i); r = prof[k].a + t*(prof[k+1].a-prof[k].a); break; }
+    for (let k = pk; k > 0; k--) if (prof[k-1].i < thr){ const t = (prof[k].i-thr)/(prof[k].i-prof[k-1].i); l = prof[k].a + t*(prof[k-1].a-prof[k].a); break; }
+    return {l, r, w:r-l};
+  }
+  function plotIes(m){
+    const R = 140, cx = 170, cy = 170;
+    let imax = 0; m.cd.forEach(row => row.forEach(v => { if (v > imax) imax = v; }));
+    if (!(imax > 0)) throw new Error('No candela data');
+    const sym = m.hA.length === 1;
+    const planes = sym ? [[0,'All planes','#131d20']] : [[0,'C0–C180','#131d20'],[90,'C90–C270','#3ab1d4']];
+    const profs = planes.map(q => profile(m, q[0]));
+    const b50 = profs.map(pr => cross(pr, .5, imax)), b10 = profs.map(pr => cross(pr, .1, imax));
+    const pt = (a, i) => { const t = a*Math.PI/180, rr = R*i/imax; return [cx + rr*Math.sin(t), cy + rr*Math.cos(t)]; };
+    const f1 = n => n.toFixed(1);
+    let s = '<svg viewBox="0 0 340 340" class="polar" font-family="IBM Plex Sans, sans-serif" font-size="9">';
+    [.25,.5,.75,1].forEach(f => { s += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*f)+'" fill="none" stroke="#d7cac1"' + (f === .5 ? ' stroke-dasharray="4 3"' : '') + '/>'; });
+    for (let a = 0; a < 180; a += 30){ const u = pt(a, imax), v = pt(a+180, imax); s += '<line x1="'+f1(u[0])+'" y1="'+f1(u[1])+'" x2="'+f1(v[0])+'" y2="'+f1(v[1])+'" stroke="#e1d7d0"/>'; }
+    for (let a = -150; a <= 180; a += 30){ const q = pt(a, imax*1.1); s += '<text x="'+f1(q[0])+'" y="'+f1(q[1]+3)+'" text-anchor="middle" fill="#4c7480">'+Math.abs(a)+'°</text>'; }
+    // beam wedge (first plane, 50%)
+    const w = b50[0];
+    if (w.w > 0){
+      let d = 'M'+cx+' '+cy;
+      for (let a = w.l; a <= w.r; a += 1){ const q = pt(a, imax); d += ' L'+f1(q[0])+' '+f1(q[1]); }
+      const q = pt(w.r, imax); d += ' L'+f1(q[0])+' '+f1(q[1])+' Z';
+      s += '<path d="'+d+'" fill="#f47937" fill-opacity=".16"/>';
+      [w.l, w.r].forEach(a => { const q = pt(a, imax); s += '<line x1="'+cx+'" y1="'+cy+'" x2="'+f1(q[0])+'" y2="'+f1(q[1])+'" stroke="#c91d26" stroke-width="1.5"/>'; });
+    }
+    profs.forEach((pr, k) => {
+      s += '<polyline fill="none" stroke="'+planes[k][2]+'" stroke-width="2" points="' + pr.map(q => { const z = pt(q.a, q.i); return f1(z[0])+','+f1(z[1]); }).join(' ') + '"/>';
+    });
+    s += '<text x="'+(cx+4)+'" y="'+(cy+R*.5+11)+'" fill="#4c7480">50%</text></svg>';
+    const per = arr => sym ? Math.round(arr[0].w) + '°' : arr.map((x,k) => 'C' + planes[k][0] + ' ' + Math.round(x.w) + '°').join(' · ');
+    const legend = '<div class="legend">' + planes.map(q => '<span><i style="background:'+q[2]+'"></i>'+q[1]+'</span>').join('') + '</div>';
+    const stats = '<div class="stats">' +
+      '<div><span>Beam angle (50%)</span><b>' + per(b50) + '</b></div>' +
+      '<div><span>Field angle (10%)</span><b>' + per(b10) + '</b></div>' +
+      '<div><span>Peak intensity</span><b>' + Math.round(imax) + ' cd</b></div>' +
+      (m.lumens ? '<div><span>Lumens</span><b>' + Math.round(m.lumens) + ' lm</b></div>' : '') +
+      '<div><span>Input power</span><b>' + (m.watts ? m.watts + ' W' : '—') + '</b></div></div>';
+    const note = m.type !== 1 ? '<p class="muted">Photometric type ' + m.type + ' (not type C): angles may not map to C-planes.</p>' : '';
+    return legend + s + stats + note;
+  }
+  async function drawIes(url){
+    const box = $('plot'); if (!box) return;
+    box.innerHTML = '<p class="muted">Loading IES…</p>';
+    try{
+      const res = await fetch(proxied(url));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const html = plotIes(parseIes(await res.text()));
+      if ($('plot')) $('plot').innerHTML = html;
+    }catch(e){
+      if ($('plot')) $('plot').innerHTML = '<p class="muted">Could not draw: ' + esc(e.message) + '. You can still use Download IES.</p>';
+    }
+  }
+  function close(){ $('modal').classList.remove('open'); }
+
+  /* ---- drill-down: manufacturer/tag card -> its IES list; IES card -> IES data ---- */
+  function drill(i){
+    const f = FLAT[i];
+    const snap = {mode:$('mode').value, uid:$('uid').value, page:$('page').value, hash:$('hash').value};
+    let next = null;
+    if ((CUR === 'manufacturers' || CUR === 'tags') && MAP.uid && f[MAP.uid] != null)
+      next = {mode: CUR === 'tags' ? 'tag' : 'manufacturer', uid: String(f[MAP.uid]), page:'0'};
+    else if ((CUR === 'manufacturer' || CUR === 'tag' || CUR === 'favorites') && MAP.hash && f[MAP.hash])
+      next = {mode:'ies', hash: String(f[MAP.hash])};
+    if (!next) return detail(i);
+    STACK.push(snap);
+    apply(next); run();
+  }
+  function apply(s){
+    if (s.mode) $('mode').value = s.mode;
+    if (s.uid != null) $('uid').value = s.uid;
+    if (s.page != null) $('page').value = s.page;
+    if (s.hash != null) $('hash').value = s.hash;
+    syncFields();
+  }
+
+  /* ---- fetch ---- */
+  async function run(){
+    show('');
+    const mode = $('mode').value; let req;
+    try { req = build(mode); } catch(e){ return show(esc(e.message)); }
+    const url = BASE + req.path;
+    const shown = url.replace(/key:[^/]+/, 'key:••••••');
+    const proxy = $('proxy').value.trim();
+    const target = proxy ? proxy + encodeURIComponent(url) : url;
+    $('go').disabled = true; $('go').textContent = 'Fetching…';
+    const t0 = performance.now();
+    try{
+      const res = await fetch(target, {headers:{Accept:'application/json'}});
+      const text = await res.text(), ms = Math.round(performance.now() - t0);
+      let d;
+      try { d = JSON.parse(text); } catch(e){ info(shown, res.status, ms, text.length, 0, 0); return show('Not valid JSON:<br><code>' + esc(text.slice(0,250)) + '</code>'); }
+      ingest(d, {status:res.status, ms, size:text.length, url:shown, mode});
+      if (!res.ok) show('HTTP ' + res.status + ' — response shown below.');
+    }catch(e){
+      show('Network error: ' + esc(e.message) + '. The API may block browser (CORS) requests. The CORS proxy field above is pre-filled with corsproxy.io; clear it to call the API directly.');
+    }finally{ $('go').disabled = false; $('go').textContent = 'Fetch'; }
+  }
+
+  /* ---- events ---- */
+  $('go').onclick = () => { STACK = []; run(); };
+  document.querySelectorAll('input').forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter' && el.id !== 'q'){ STACK = []; run(); } }));
+  $('mode').onchange = syncFields;
+  $('eye').onclick = () => { const k = $('key'), s = k.type === 'password'; k.type = s ? 'text' : 'password'; $('eye').textContent = s ? 'Hide' : 'Show'; };
+  $('q').oninput = render;
+  $('rawBtn').onclick = () => {
+    const raw = $('raw').classList.contains('hide');
+    $('raw').classList.toggle('hide', !raw); $('gallery').classList.toggle('hide', raw);
+    $('rawBtn').textContent = raw ? 'Gallery' : 'Raw JSON';
+  };
+  $('back').onclick = () => { const s = STACK.pop(); if (s){ apply(s); run(); } };
+  $('prev').onclick = () => { const p = Math.max(0, (+$('page').value || 0) - 1); $('page').value = p; run(); };
+  $('next').onclick = () => { $('page').value = (+$('page').value || 0) + 1; run(); };
+  document.addEventListener('click', e => {
+    const c = e.target.closest('.card'); if (c) drill(+c.dataset.i);
+    if (e.target.id === 'modal') close();
+  });
+  document.addEventListener('keydown', e => e.key === 'Escape' && close());
+  $('sample').onclick = () => {
+    const n = ['Philips','Osram','Zumtobel','Erco','Thorn','iGuzzini','Trilux','Ledvance'];
+    const d = n.map((x,i) => ({uid:i+1, name:x, ies_count:[1200,980,640,410,820,530,760,300][i], country:['NL','DE','AT','DE','UK','IT','DE','DE'][i]}));
+    ingest(d, {status:200, ms:0, size:JSON.stringify(d).length, url:'(sample data)', mode:'manufacturers'});
+  };
+  syncFields();
+})();
+</script>
+</body>
+</html>
