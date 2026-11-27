@@ -73,6 +73,19 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 td{padding:8px 0;border-bottom:1px solid var(--sand2);vertical-align:top;word-break:break-word}
 td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(--mono);font-size:12px}
 .close{float:right}
+
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+a.btn{text-decoration:none;display:inline-block}
+.muted{color:var(--teal3);font-size:13px}
+.polar{width:100%;max-width:420px;display:block;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0 6px}
+.stats div{background:var(--sand1);border-radius:6px;padding:10px 12px}
+.stats span{display:block;font-size:11px;color:var(--teal3)}
+.stats b{font:500 17px var(--font)}
+.legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--teal3);margin-bottom:6px}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+details.all{margin-top:18px}
+details.all summary{cursor:pointer;font-size:13px;color:var(--teal3)}
 </style>
 </head>
 <body>
@@ -222,6 +235,7 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
     $('pg').textContent = 'Page ' + ($('page').value || 0);
     $('back').classList.toggle('hide', !STACK.length);
     render();
+    if (CUR === 'ies' && FLAT.length === 1) detail(0);
   }
   function render(){
     const q = $('q').value.trim().toLowerCase();
@@ -236,13 +250,118 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
         '</div><div class="meta"><h3>' + esc(t) + '</h3>' + (d ? '<p>' + esc(d) + '</p>' : '') + '</div></div>';
     }).join('') : '<p>No records.</p>';
   }
+  const urlOf = (f, name) => { const k = Object.keys(f).find(k => leaf(k) === name); return k ? f[k] : null; };
+  const proxied = u => { const p = $('proxy').value.trim(); return p ? p + encodeURIComponent(u) : u; };
+
   function detail(i){
     const f = FLAT[i], img = MAP.img ? f[MAP.img] : null;
     const t = MAP.title && f[MAP.title] != null ? f[MAP.title] : 'Record ' + (i+1);
+    const iesUrl = urlOf(f, 'downloadurlies'), ldtUrl = urlOf(f, 'downloadurlldt');
+    const acts = (iesUrl || ldtUrl) ?
+      '<div class="acts">' +
+      (iesUrl ? '<a class="btn red" href="' + esc(iesUrl) + '" target="_blank" rel="noopener">Download IES</a>' : '') +
+      (ldtUrl ? '<a class="btn" href="' + esc(ldtUrl) + '" target="_blank" rel="noopener">Download LDT</a>' : '') +
+      (iesUrl ? '<button class="btn" id="draw" type="button">Redraw</button>' : '') +
+      '</div><div id="plot"></div>' : '';
     $('sheet').innerHTML = (img ? '<div class="img"><img src="' + esc(img) + '" alt=""></div>' : '') +
-      '<div class="body"><button class="btn close" id="x">Close</button><h2>' + esc(t) + '</h2><table>' +
-      Object.keys(f).map(k => '<tr><td>' + esc(k) + '</td><td>' + esc(f[k] ?? '') + '</td></tr>').join('') + '</table></div>';
+      '<div class="body"><button class="btn close" id="x">Close</button><h2>' + esc(t) + '</h2>' + acts +
+      '<details class="all"' + (acts ? '' : ' open') + '><summary>All fields</summary><table>' +
+      Object.keys(f).map(k => '<tr><td>' + esc(k) + '</td><td>' + esc(f[k] ?? '') + '</td></tr>').join('') + '</table></details></div>';
     $('modal').classList.add('open'); $('x').onclick = close;
+    if (iesUrl){ $('draw').onclick = () => drawIes(iesUrl); drawIes(iesUrl); }
+  }
+
+  /* ---- IES (LM-63) parsing and beam angle ---- */
+  function parseIes(t){
+    const lines = t.replace(/\r/g,'').split('\n');
+    const ti = lines.findIndex(l => /^\s*TILT\s*=/i.test(l));
+    if (ti < 0) throw new Error('Not a valid IES file');
+    const tilt = lines[ti].split('=')[1].trim().toUpperCase();
+    const r = lines.slice(ti+1).join(' ').split(/[\s,]+/).filter(Boolean).map(Number);
+    let p = 0;
+    if (tilt === 'INCLUDE'){ p++; const n = r[p++]; p += 2*n; }
+    const nL = r[p++], lpl = r[p++], mult = r[p++], nV = r[p++], nH = r[p++], type = r[p++], units = r[p++];
+    p += 3; p += 3; const watts = r[p-1];
+    const vA = r.slice(p, p+nV); p += nV;
+    const hA = r.slice(p, p+nH); p += nH;
+    const cd = [];
+    for (let h = 0; h < nH; h++){ cd.push(r.slice(p, p+nV).map(x => x * mult)); p += nV; }
+    if (!nV || !nH || cd.some(row => row.length !== nV || row.some(isNaN))) throw new Error('IES data is incomplete');
+    return {lumens: lpl > 0 ? nL * lpl : null, type, units, watts, vA, hA, cd};
+  }
+  function cdAt(m, c, gi){
+    const H = m.hA, n = H.length; c = ((c % 360) + 360) % 360;
+    if (n === 1) return m.cd[0][gi];
+    const last = H[n-1];
+    if (last <= 90){ if (c > 180) c = 360 - c; if (c > 90) c = 180 - c; }
+    else if (last <= 180){ if (c > 180) c = 360 - c; }
+    if (c <= H[0]) return m.cd[0][gi];
+    for (let k = 1; k < n; k++) if (c <= H[k]){ const t = (c - H[k-1]) / (H[k] - H[k-1]); return m.cd[k-1][gi]*(1-t) + m.cd[k][gi]*t; }
+    return m.cd[n-1][gi];
+  }
+  function profile(m, c){
+    const pos = m.vA.map((g,gi) => ({a:g, i:cdAt(m,c,gi)}));
+    const neg = m.vA.map((g,gi) => ({a:-g, i:cdAt(m,c+180,gi)})).reverse();
+    return neg.concat(pos.filter(q => q.a !== 0));
+  }
+  function cross(prof, frac, imax){
+    const thr = frac * imax; let pk = 0;
+    prof.forEach((q,k) => { if (q.i > prof[pk].i) pk = k; });
+    if (prof[pk].i < thr) return {l:0, r:0, w:0};
+    let r = prof[prof.length-1].a, l = prof[0].a;
+    for (let k = pk; k < prof.length-1; k++) if (prof[k+1].i < thr){ const t = (prof[k].i-thr)/(prof[k].i-prof[k+1].i); r = prof[k].a + t*(prof[k+1].a-prof[k].a); break; }
+    for (let k = pk; k > 0; k--) if (prof[k-1].i < thr){ const t = (prof[k].i-thr)/(prof[k].i-prof[k-1].i); l = prof[k].a + t*(prof[k-1].a-prof[k].a); break; }
+    return {l, r, w:r-l};
+  }
+  function plotIes(m){
+    const R = 140, cx = 170, cy = 170;
+    let imax = 0; m.cd.forEach(row => row.forEach(v => { if (v > imax) imax = v; }));
+    if (!(imax > 0)) throw new Error('No candela data');
+    const sym = m.hA.length === 1;
+    const planes = sym ? [[0,'All planes','#131d20']] : [[0,'C0–C180','#131d20'],[90,'C90–C270','#3ab1d4']];
+    const profs = planes.map(q => profile(m, q[0]));
+    const b50 = profs.map(pr => cross(pr, .5, imax)), b10 = profs.map(pr => cross(pr, .1, imax));
+    const pt = (a, i) => { const t = a*Math.PI/180, rr = R*i/imax; return [cx + rr*Math.sin(t), cy + rr*Math.cos(t)]; };
+    const f1 = n => n.toFixed(1);
+    let s = '<svg viewBox="0 0 340 340" class="polar" font-family="IBM Plex Sans, sans-serif" font-size="9">';
+    [.25,.5,.75,1].forEach(f => { s += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*f)+'" fill="none" stroke="#d7cac1"' + (f === .5 ? ' stroke-dasharray="4 3"' : '') + '/>'; });
+    for (let a = 0; a < 180; a += 30){ const u = pt(a, imax), v = pt(a+180, imax); s += '<line x1="'+f1(u[0])+'" y1="'+f1(u[1])+'" x2="'+f1(v[0])+'" y2="'+f1(v[1])+'" stroke="#e1d7d0"/>'; }
+    for (let a = -150; a <= 180; a += 30){ const q = pt(a, imax*1.1); s += '<text x="'+f1(q[0])+'" y="'+f1(q[1]+3)+'" text-anchor="middle" fill="#4c7480">'+Math.abs(a)+'°</text>'; }
+    // beam wedge (first plane, 50%)
+    const w = b50[0];
+    if (w.w > 0){
+      let d = 'M'+cx+' '+cy;
+      for (let a = w.l; a <= w.r; a += 1){ const q = pt(a, imax); d += ' L'+f1(q[0])+' '+f1(q[1]); }
+      const q = pt(w.r, imax); d += ' L'+f1(q[0])+' '+f1(q[1])+' Z';
+      s += '<path d="'+d+'" fill="#f47937" fill-opacity=".16"/>';
+      [w.l, w.r].forEach(a => { const q = pt(a, imax); s += '<line x1="'+cx+'" y1="'+cy+'" x2="'+f1(q[0])+'" y2="'+f1(q[1])+'" stroke="#c91d26" stroke-width="1.5"/>'; });
+    }
+    profs.forEach((pr, k) => {
+      s += '<polyline fill="none" stroke="'+planes[k][2]+'" stroke-width="2" points="' + pr.map(q => { const z = pt(q.a, q.i); return f1(z[0])+','+f1(z[1]); }).join(' ') + '"/>';
+    });
+    s += '<text x="'+(cx+4)+'" y="'+(cy+R*.5+11)+'" fill="#4c7480">50%</text></svg>';
+    const per = arr => sym ? Math.round(arr[0].w) + '°' : arr.map((x,k) => 'C' + planes[k][0] + ' ' + Math.round(x.w) + '°').join(' · ');
+    const legend = '<div class="legend">' + planes.map(q => '<span><i style="background:'+q[2]+'"></i>'+q[1]+'</span>').join('') + '</div>';
+    const stats = '<div class="stats">' +
+      '<div><span>Beam angle (50%)</span><b>' + per(b50) + '</b></div>' +
+      '<div><span>Field angle (10%)</span><b>' + per(b10) + '</b></div>' +
+      '<div><span>Peak intensity</span><b>' + Math.round(imax) + ' cd</b></div>' +
+      (m.lumens ? '<div><span>Lumens</span><b>' + Math.round(m.lumens) + ' lm</b></div>' : '') +
+      '<div><span>Input power</span><b>' + (m.watts ? m.watts + ' W' : '—') + '</b></div></div>';
+    const note = m.type !== 1 ? '<p class="muted">Photometric type ' + m.type + ' (not type C): angles may not map to C-planes.</p>' : '';
+    return legend + s + stats + note;
+  }
+  async function drawIes(url){
+    const box = $('plot'); if (!box) return;
+    box.innerHTML = '<p class="muted">Loading IES…</p>';
+    try{
+      const res = await fetch(proxied(url));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const html = plotIes(parseIes(await res.text()));
+      if ($('plot')) $('plot').innerHTML = html;
+    }catch(e){
+      if ($('plot')) $('plot').innerHTML = '<p class="muted">Could not draw: ' + esc(e.message) + '. You can still use Download IES.</p>';
+    }
   }
   function close(){ $('modal').classList.remove('open'); }
 
