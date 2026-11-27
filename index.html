@@ -107,7 +107,7 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
   </div>
   <div style="margin-top:12px;display:flex;gap:16px;align-items:center">
     <button class="link" id="sample" type="button">Sample data</button>
-    <input id="proxy" class="mono" style="max-width:340px;padding:8px 10px;font-size:12px" placeholder="CORS proxy prefix (optional)" autocomplete="off">
+    <input id="proxy" class="mono" style="max-width:340px;padding:8px 10px;font-size:12px" placeholder="CORS proxy prefix (optional)" value="https://corsproxy.io/?url=" autocomplete="off">
   </div>
 
   <div id="err"></div>
@@ -286,7 +286,7 @@ td:first-child{color:var(--teal3);width:36%;padding-right:12px;font-family:var(-
       ingest(d, {status:res.status, ms, size:text.length, url:shown, mode});
       if (!res.ok) show('HTTP ' + res.status + ' — response shown below.');
     }catch(e){
-      show('Network error: ' + esc(e.message) + '. The API may block browser (CORS) requests. Try a CORS proxy prefix in the field above.');
+      show('Network error: ' + esc(e.message) + '. The API may block browser (CORS) requests. The CORS proxy field above is pre-filled with corsproxy.io; clear it to call the API directly.');
     }finally{ $('go').disabled = false; $('go').textContent = 'Fetch'; }
   }
 
